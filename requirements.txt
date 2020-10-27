@@ -20,7 +20,7 @@ compressed-segmentation==2.0.1
 configparser==5.0.0
 connected-components-3d==1.10.0
 crc32c==2.1
-cryptography==3.1.1
+cryptography==3.2
 cycler==0.10.0
 datajoint==0.12.6
 decorator==4.4.2
