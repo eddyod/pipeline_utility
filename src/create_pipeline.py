@@ -71,8 +71,8 @@ if __name__ == '__main__':
     
     if step > 0:
         start = timer()
-        pipeline.create_preps()
-        pipeline.create_normalized()
+        #pipeline.create_preps()
+        #pipeline.create_normalized()
         pipeline.create_masks()
         end = timer()
         print(f'Creating normalized and masks took {end - start} seconds')    
@@ -100,7 +100,7 @@ if __name__ == '__main__':
     if step > 3:
         start = timer()
         pipeline.create_neuroglancer_image()
-        #pipeline.create_downsampling()
+        pipeline.create_downsampling()
         end = timer()
         print(f'Last step: creating neuroglancer images took {end - start} seconds')    
 
