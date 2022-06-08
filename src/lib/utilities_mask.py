@@ -306,7 +306,7 @@ def scaled(img, mask, epsilon=0.01, scale=45000):
     _range = 2 ** 16 - 1
     scaled = img * (45000. / _max)
     scaled[scaled > _range] = _range
-    scaled = scaled * (mask > 10)
+    scaled = scaled * (mask > 0)
     return scaled.astype(img.dtype)
 
 
