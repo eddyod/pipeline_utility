@@ -12,8 +12,6 @@ def create_downsamples(animal, channel, downsample):
     channel_outdir = f'C{channel}'
     first_chunk = calculate_chunks(downsample, 0)
     mips = [0,1,2,3,4,5,6,7]
-    # DK73 is proving to be a pain in the butt. I am limiting
-    # the chunks to 64,64,64 and the mips to 0,1,2,3
 
     if downsample:
         channel_outdir += 'T'
