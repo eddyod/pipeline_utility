@@ -71,7 +71,7 @@ if __name__ == '__main__':
     
     if step > 0:
         start = timer()
-        #pipeline.create_preps()
+        pipeline.create_preps()
         pipeline.create_normalized()
         pipeline.create_masks()
         end = timer()

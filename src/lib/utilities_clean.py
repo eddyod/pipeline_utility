@@ -65,9 +65,9 @@ def fix_ntb(file_key):
         fixed = np.flip(fixed, axis=1)
 
     fixed = place_image(fixed, infile, max_width, max_height, 0)
-    # cv2.imwrite(outpath, fixed)
     try:
-        tiff.imsave(outpath, fixed)
+        # tiff.imsave(outpath, fixed)
+        cv2.imwrite(outpath, fixed)
     except Exception as e:
         print(f'Error in saving {outpath} with shape {fixed.shape} img type {type(fixed)}')
         print(f'Error is {e}')
