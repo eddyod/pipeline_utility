@@ -197,7 +197,7 @@ class Pipeline:
         masks = False 
         create_csv = False
         allen = False
-        run_offsets(self.animal, transforms, self.channel, self.downsample, masks, create_csv, allen)
+        run_offsets(self.animal, transforms, self.channel, self.downsample, masks, create_csv, allen, self.debug)
 
     
     def create_web(self):

@@ -85,7 +85,7 @@ def parse_elastix(animal):
 
 
 
-def run_offsets(animal, transforms, channel, downsample, masks, create_csv, allen):
+def run_offsets(animal, transforms, channel, downsample, masks, create_csv, allen, debug):
     """
     This gets the dictionary from the above method, and uses the coordinates
     to feed into the Imagemagick convert program. This method also uses a Pool to spawn multiple processes.
@@ -146,8 +146,12 @@ def run_offsets(animal, transforms, channel, downsample, masks, create_csv, alle
         create_csv_data(animal, file_keys)
     else:
         workers, _ = get_cpus()
-        with ProcessPoolExecutor(max_workers=workers) as executor:
-            executor.map(process_image, sorted(file_keys))
+        if debug:
+            for file_key in file_keys:
+                process_image(file_key)
+        else:
+            with ProcessPoolExecutor(max_workers=workers) as executor:
+                executor.map(process_image, sorted(file_keys))
 
 def align_full_size_image(animal, transforms, channel):
     transforms = create_downsampled_transforms(animal, transforms, downsample = False)

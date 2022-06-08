@@ -6,12 +6,11 @@ from PIL import Image
 Image.MAX_IMAGE_PIXELS = None
 import pickle
 import re
-from sqlalchemy.orm.exc import NoResultFound
+import cv2
 from lib.sqlcontroller import SqlController
 from lib.file_location import FileLocationManager
-from model.elastix_transformation import ElastixTransformation
-from lib.sql_setup import session
 import tifffile as tiff
+
 from scipy.ndimage import affine_transform
 def load_transforms(stack, downsample_factor=None, resolution=None, use_inverse=True, anchor_filepath=None):
     """
@@ -358,15 +357,23 @@ orientation_argparse_str_to_imagemagick_str =     {'transpose': '-transpose',
      'flop': '-flop'
     }
 
+
 def process_image(file_key):
     _, infile, outfile, T = file_key
     image = tiff.imread(infile)
-    matrix = T[:2,:2]
-    offset = T[:2,2]
+    matrix = T[:2, :2]
+    offset = T[:2, 2]
     offset = np.flip(offset)
-    image1 = affine_transform(image,matrix.T,offset)
-    tiff.imsave(outfile,image1)
-    del image,image1
+    try:
+        image1 = affine_transform(image, matrix.T, offset)
+    except Exception as e0:
+        print('Error aligning image', e0)
+    try:
+        # tiff.imsave(outfile, image1, compression ='lzw')
+        cv2.imwrite(outfile, image1)
+    except Exception as e1:
+        print('Error saving file', e1)
+    del image, image1
     return
 
 

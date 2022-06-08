@@ -143,7 +143,7 @@ def register_test(INPUT, fixed_index, moving_index):
 
 
 
-def register_simple(INPUT, fixed_index, moving_index):
+def register_simpleXXX(INPUT, fixed_index, moving_index):
     pixelType = sitk.sitkFloat32
     fixed_file = os.path.join(INPUT, f'{fixed_index}.tif')
     moving_file = os.path.join(INPUT, f'{moving_index}.tif')
@@ -286,7 +286,7 @@ def register_simple(INPUT, fixed_index, moving_index):
     ## 80 good results, 7 minutes on basalis with 4 jobs
     ## 200 good results except for 1st couple were not aligned, 12 minutes
     ## 500 is best, including first sections, basalis took 21 minutes
-    rigid_params['MaximumNumberOfIterations']=['1200']
+    rigid_params['MaximumNumberOfIterations']=['20']
 
     ## The step size of the optimizer, in mm. By default the voxel size is used.
     ## which usually works well. In case of unusual high-resolution images

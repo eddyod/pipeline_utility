@@ -55,8 +55,8 @@ def fix_ntb(file_key):
         fixed = scaled(fixed, mask)
         fixed = equalized(fixed)
     del mask
-    #####TODO check 
-    #fixed = crop_image(fixed, infile, maskfile)
+    #####TODO check if this helping 
+    fixed = crop_image(fixed, infile, maskfile)
     if rotation > 0:
         fixed = rotate_image(fixed, infile, rotation)
     if flip == 'flip':
