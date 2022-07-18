@@ -36,11 +36,11 @@ def make_meta(animal):
     section_number = 1
     for czi_file in tqdm(czi_files):
         extension = os.path.splitext(czi_file)[1]
-        slide_id = int(re.search('slide(\d+)', czi_file).group(1))
-        if extension.endswith('czi') and not sqlController.slide_exists(scan_id, slide_id):
+        FK_slide_id = int(re.search('slide(\d+)', czi_file).group(1))
+        if extension.endswith('czi') and not sqlController.slide_exists(scan_id, FK_slide_id):
             slide = Slide()
             slide.scan_run_id = scan_id
-            slide.slide_physical_id = slide_id
+            slide.slide_physical_id = FK_slide_id
             slide.rescan_number = "1"
             slide.slide_status = 'Good'
             slide.processed = False
@@ -66,7 +66,7 @@ def make_meta(animal):
                 height = metadata_dict[series_index]['height']
                 for channel in channels:
                     tif = SlideCziTif()
-                    tif.slide_id = slide.id
+                    tif.FK_slide_id = slide.id
                     tif.scene_number = scene_number
                     tif.file_size = 0
                     tif.active = 1
