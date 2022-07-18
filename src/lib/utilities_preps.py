@@ -10,7 +10,7 @@ from lib.sql_setup import CREATE_CHANNEL_3_FULL_RES, \
 from lib.file_location import FileLocationManager
 from lib.sqlcontroller import SqlController
 from lib.utilities_process import create_downsample, test_dir, \
-    get_image_size, resize_and_save_tif
+    get_image_size
 
 def set_task_preps(animal,channel):
     sqlController = SqlController(animal)
@@ -60,7 +60,7 @@ def make_full_resolution(animal, channel,workers = 10):
         results = executor.map(copyfile, input_paths,output_paths)
 
 
-def make_low_resolution(animal, channel, debug,workers = 10):
+def make_low_resolution(animal, channel, debug, workers = 10):
     """
     Args:
         takes the full resolution tifs and downsamples them.
@@ -95,7 +95,7 @@ def make_low_resolution(animal, channel, debug,workers = 10):
 
     if debug:
         for file_key in file_keys:
-            resize_and_save_tif(file_key)
+            create_downsample(file_key)
     else:
         with ProcessPoolExecutor(max_workers=workers) as executor:
             executor.map(create_downsample, file_keys)
