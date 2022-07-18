@@ -11,7 +11,7 @@ class SlideCziTif(Base, AtlasModel):
     __tablename__ = 'slide_czi_to_tif'
 
     id =  Column(Integer, primary_key=True, nullable=False)
-    slide_id = Column(Integer, ForeignKey('slide.id'), nullable=False)
+    FK_slide_id = Column(Integer, ForeignKey('slide.id'), nullable=False)
     file_name = Column(String, nullable=False)
     scene_number = Column(Integer, nullable=False)
     width = Column(Integer)
