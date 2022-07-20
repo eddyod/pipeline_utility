@@ -142,8 +142,8 @@ if __name__ == '__main__':
     # split the dataset in train and test set
     torch.manual_seed(1)
     indices = torch.randperm(len(dataset)).tolist()
-    test_cases = int(len(indices) * 0.0175)
-    test_cases = max(test_cases, 10)
+    test_cases = int(len(indices) * 0.15)
+    #test_cases = max(test_cases, 10)
     dataset = torch.utils.data.Subset(dataset, indices[:-test_cases])
     dataset_test = torch.utils.data.Subset(dataset_test, indices[-test_cases:])
     # define training and validation data loaders
@@ -154,7 +154,7 @@ if __name__ == '__main__':
     data_loader_test = torch.utils.data.DataLoader(
             dataset_test, batch_size=1, shuffle=False, num_workers=workers,
             collate_fn=utils.collate_fn)
-    print("We have: {} examples, {} are training and {} testing".format(len(indices), len(dataset), len(dataset_test)))
+    print(f"We have: {len(indices)} examples, {len(dataset)} are training and {len(dataset_test)} testing")
 
     if torch.cuda.is_available(): 
         device = torch.device('cuda') 

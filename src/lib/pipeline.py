@@ -114,8 +114,9 @@ class Pipeline:
         Creates the tifs. These need to be checked in the DB before
         proceeding to the create_preps step
         """
-        make_full_resolution(self.animal, self.channel,self.get_nworkers())
-        make_low_resolution(self.animal, self.channel, self.debug,self.get_nworkers())
+        make_full_resolution(self.animal, self.channel, self.get_nworkers())
+        make_low_resolution(self.animal, self.channel,
+                            self.debug, self.get_nworkers())
         set_task_preps(self.animal, self.channel)
 
     

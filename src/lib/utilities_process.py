@@ -181,21 +181,6 @@ def make_tifs(animal, channel,workers = 10):
     with Pool(workers) as p:
         p.map(workernoshell, commands)
 
-def resize_and_save_tif(file_key):
-    """
-    This does not work. PIL just can't open large TIF files (18 Oct 2021)
-    """
-    print('Error, this method does not work: resize_and_save_tif')
-    sys.exit()
-    filepath, png_path = file_key
-    image = io.imread(filepath)
-    image = Image.fromarray(image, "I;16L")
-    width, height = image.size
-    width = int(round(width*SCALING_FACTOR))
-    height = int(round(height*SCALING_FACTOR))
-    image.resize((width, height),Image.LANCZOS)
-    image.save(png_path,format = 'png')
-
 def make_scenes(animal):
     fileLocationManager = FileLocationManager(animal)
     INPUT = fileLocationManager.tif
