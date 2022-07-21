@@ -37,6 +37,25 @@ def create_final(animal):
         mask[mask>0] = 255
         cv2.imwrite(maskpath, mask.astype(np.uint8))
 
+def create_final_fill(animal):
+    fileLocationManager = FileLocationManager(animal)
+    INPUT = os.path.join(fileLocationManager.prep, 'masks', 'thumbnail_masked')
+    # error = test_dir(animal, INPUT, True, same_size=False)
+    # if len(error) > 0:
+    #     print(error)
+    #     sys.exit()
+    files = sorted(os.listdir(INPUT))
+    for file in files:
+        maskpath = os.path.join(INPUT, file)    
+        maskfile = Image.open(maskpath) # 
+        mask = np.array(maskfile)
+        #firstindex = np.where(mask==255)[0][0]
+        r = np.where(mask==255)
+        rows = r[0]
+        firstrow = rows[0]
+        lastrow = rows[-1]
+        print(file, firstrow, lastrow, mask.shape)
+
 def get_model_instance_segmentation(num_classes):
     # load an instance segmentation model pre-trained pre-trained on COCO
     model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)

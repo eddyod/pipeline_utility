@@ -15,7 +15,7 @@ from lib.utilities_meta import make_meta
 from lib.utilities_preps import make_full_resolution, make_low_resolution, set_task_preps
 from lib.utilities_process import make_tifs, make_scenes
 from lib.utilities_normalized import create_normalization
-from lib.utilities_create_masks import create_final,create_mask
+from lib.utilities_create_masks import create_final, create_final_fill,create_mask
 from lib.utilities_histogram import make_combined,make_histogram
 from lib.utilities_clean import masker
 from lib.utilities_elastics import create_elastix
@@ -150,6 +150,10 @@ class Pipeline:
         '''
         if self.channel == 1 and self.downsample:
             create_final(self.animal)
+    
+    def create_masks_fill(self):
+        if self.channel == 1 and self.downsample:
+            create_final_fill(self.animal)
     
     def create_histograms(self, single):
         '''
