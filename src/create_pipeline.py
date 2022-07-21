@@ -80,9 +80,8 @@ if __name__ == '__main__':
     if step > 1:
         start = timer()
         pipeline.create_masks_final()
-        pipeline.create_masks_fill()
+        # pipeline.create_masks_fill()
         print('\tFinished create_masks final')    
-        sys.exit()
         pipeline.create_clean()
         print('\tFinished clean')    
         #####pipeline.create_histograms(single=True)

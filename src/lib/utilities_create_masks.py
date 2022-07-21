@@ -40,22 +40,32 @@ def create_final(animal):
 def create_final_fill(animal):
     fileLocationManager = FileLocationManager(animal)
     INPUT = os.path.join(fileLocationManager.prep, 'masks', 'thumbnail_masked')
+    MASKS = os.path.join(fileLocationManager.prep, 'masks', 'thumbnail_masked_filled')
+    os.makedirs(MASKS, exist_ok=True)
     # error = test_dir(animal, INPUT, True, same_size=False)
     # if len(error) > 0:
     #     print(error)
     #     sys.exit()
     files = sorted(os.listdir(INPUT))
     for file in files:
-        maskpath = os.path.join(INPUT, file)    
+        maskpath = os.path.join(INPUT, file)
+        maskfillpath = os.path.join(MASKS, file)   
         maskfile = Image.open(maskpath) # 
         mask = np.array(maskfile)
         #firstindex = np.where(mask==255)[0][0]
-        r = np.where(mask==255)
-        rows = r[0]
-        firstrow = rows[0]
-        lastrow = rows[-1]
-        print(file, firstrow, lastrow, mask.shape)
-
+        white = np.where(mask==255)
+        whiterows = white[0]
+        whitecols = white[1]
+        firstrow = whiterows[0]
+        lastrow = whiterows[-1]
+        #firstcol = whitecols[0]
+        lastcol = whitecols[-1]
+        #toppoint = (firstrow, firstcol)
+        #bottompt = (lastrow, lastcol)
+        #print(file, toppoint, bottompt, mask.shape)
+        mask[firstrow:lastrow, 0:lastcol] = 255
+        cv2.imwrite(maskfillpath, mask.astype(np.uint8))
+ 
 def get_model_instance_segmentation(num_classes):
     # load an instance segmentation model pre-trained pre-trained on COCO
     model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
