@@ -4,18 +4,45 @@ import torch
 from PIL import Image
 Image.MAX_IMAGE_PIXELS = None
 import cv2
+from subprocess import check_output
+
 from concurrent.futures.process import ProcessPoolExecutor
 import torchvision
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 from lib.file_location import FileLocationManager 
-from abakit.utilities.shell_tools import get_image_size
-from abakit.utilities.masking import combine_dims, merge_mask
 from lib.sql_setup import CREATE_FULL_RES_MASKS
 from lib.sqlcontroller import SqlController
 from lib.utilities_process import get_cpus, test_dir
 import warnings
 warnings.filterwarnings("ignore")
+
+
+def get_image_size(filepath):
+    result_parts = str(check_output(["identify", filepath]))
+    results = result_parts.split()
+    width, height = results[2].split('x')
+    return width, height
+
+
+
+def merge_mask(image, mask):
+    b = mask
+    g = image
+    r = np.zeros_like(image).astype(np.uint8)
+    merged = np.stack([r, g, b], axis=2)
+    return merged
+
+
+def combine_dims(a):
+    if a.shape[0] > 0:
+        a1 = a[0,:,:]
+        a2 = a[1,:,:]
+        a3 = np.add(a1,a2)
+    else:
+        a3 = np.zeros([a.shape[1], a.shape[2]]) + 255
+    return a3
+
 
 def create_final(animal):
     fileLocationManager = FileLocationManager(animal)
