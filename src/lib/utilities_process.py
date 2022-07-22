@@ -32,7 +32,7 @@ def get_cpus():
     cpus = {}
     cpus['mothra'] = (1,1)
     cpus['muralis'] = (10,20)
-    cpus['basalis'] = (4,12)
+    cpus['basalis'] = (2,2)
     cpus['ratto'] = (4,8)
     hostname = get_hostname()
     if hostname in cpus.keys():
