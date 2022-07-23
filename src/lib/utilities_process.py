@@ -27,12 +27,14 @@ def get_hostname():
     return hostname
 
 def get_cpus():
+    """There is little point in setting two different levels in one host
+    """
     nmax = 4
     usecpus = (nmax,nmax)
     cpus = {}
     cpus['mothra'] = (1,1)
     cpus['muralis'] = (10,20)
-    cpus['basalis'] = (2,2)
+    cpus['basalis'] = (4,4)
     cpus['ratto'] = (4,8)
     hostname = get_hostname()
     if hostname in cpus.keys():
