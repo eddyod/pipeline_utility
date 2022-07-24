@@ -193,7 +193,7 @@ def parameter_elastix_parameter_file_to_dict(filename):
 
 
 
-def create_downsampled_transforms(animal, transforms, downsample):
+def create_transforms(transforms, downsample):
     """
     Changes the dictionary of transforms to the correct resolution
     :param animal: prep_id of animal we are working on
@@ -358,7 +358,7 @@ orientation_argparse_str_to_imagemagick_str =     {'transpose': '-transpose',
     }
 
 
-def process_image(file_key):
+def process_imageXXX(file_key):
     _, infile, outfile, T = file_key
     image = tiff.imread(infile)
     matrix = T[:2, :2]
@@ -376,6 +376,15 @@ def process_image(file_key):
     del image, image1
     return
 
+def process_image(file_key):
+    _, infile, outfile, T = file_key
+    print(f'process image {outfile}')
+    im1 = Image.open(infile)
+    im2 = im1.transform((im1.size), Image.AFFINE, T.flatten()[:6], resample=Image.NEAREST)
+    im2.save(outfile)
+
+    del im1, im2
+    return
 
 def reverse_transform_create_alignment(points, transform):
     """

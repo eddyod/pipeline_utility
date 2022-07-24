@@ -16,16 +16,14 @@ from lib.utilities_preps import make_full_resolution, make_low_resolution, set_t
 from lib.utilities_process import make_tifs, make_scenes
 from lib.utilities_normalized import create_normalization
 from lib.utilities_create_masks import create_final, create_final_fill,create_mask
-from lib.utilities_histogram import make_combined,make_histogram
+from lib.utilities_histogram import make_combined, make_histogram
 from lib.utilities_clean import masker
 from lib.utilities_elastics import create_elastix
 from lib.utilities_create_alignment import parse_elastix, run_offsets
 from lib.utilities_web import make_web_thumbnails
 from lib.utilities_neuroglancer_image import create_neuroglancer
 from lib.utilities_downsampling import create_downsamples
-import yaml
 import socket
-import multiprocessing
 
 class Pipeline:
     '''
@@ -104,7 +102,7 @@ class Pipeline:
         This method creates the tifs from the czi files. The files are used for the create_preps method
         It also creates the scenes under data/DKXX/www/scenes
         '''
-        make_tifs(self.animal, self.channel,self.get_nworkers())
+        make_tifs(self.animal, self.channel, self.get_nworkers())
         if self.channel == 1 and self.downsample:
             make_scenes(self.animal)
 

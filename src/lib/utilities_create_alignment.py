@@ -10,7 +10,7 @@ from PIL import Image
 Image.MAX_IMAGE_PIXELS = None
 from lib.file_location import FileLocationManager
 from lib.sqlcontroller import SqlController
-from lib.utilities_alignment import (create_downsampled_transforms, process_image)
+from lib.utilities_alignment import (create_transforms, process_image)
 from lib.utilities_process import test_dir, get_cpus
 from model.elastix_transformation import ElastixTransformation
 from lib.sql_setup import session
@@ -122,10 +122,12 @@ def run_offsets(animal, transforms, channel, downsample, masks, create_csv, alle
     sqlController.set_task(animal, progress_id)
 
     os.makedirs(OUTPUT, exist_ok=True)
-    downsampled_transforms = create_downsampled_transforms(animal, transforms, downsample)
-    downsampled_transforms = OrderedDict(sorted(downsampled_transforms.items()))
+    # The create_transforms determines if the rotation matrix should be adjusted
+    # for full res or thumbnails
+    transforms = create_transforms(transforms, downsample)
+    transforms = OrderedDict(sorted(transforms.items()))
     file_keys = []
-    for i, (file, T) in enumerate(downsampled_transforms.items()):
+    for i, (file, T) in enumerate(transforms.items()):
         if allen:
             r90 = np.array([[0,-1,0],[1,0,0],[0,0,1]])
             ROT_DIR = os.path.join(fileLocationManager.root, animal, 'rotations')
@@ -153,8 +155,8 @@ def run_offsets(animal, transforms, channel, downsample, masks, create_csv, alle
             with ProcessPoolExecutor(max_workers=workers) as executor:
                 executor.map(process_image, sorted(file_keys))
 
-def align_full_size_image(animal, transforms, channel):
-    transforms = create_downsampled_transforms(animal, transforms, downsample = False)
+def align_full_size_imageXXX(animal, transforms, channel):
+    transforms = create_transforms(animal, transforms, downsample = False)
     fileLocationManager = FileLocationManager(animal)
     sqlController = SqlController(animal)
     channel_dir = 'CH{}'.format(channel)
@@ -164,8 +166,8 @@ def align_full_size_image(animal, transforms, channel):
     progress_id = sqlController.get_progress_id(downsample = False, channel = channel, action = 'ALIGN')
     sqlController.set_task(animal, progress_id)
 
-def align_downsampled_images(animal, transforms, channel):
-    transforms = create_downsampled_transforms(animal, transforms, downsample = True)
+def align_downsampled_imagesXXX(animal, transforms, channel):
+    transforms = create_transforms(animal, transforms, downsample = True)
     fileLocationManager = FileLocationManager(animal)
     sqlController = SqlController(animal)
     channel_dir = 'CH{}'.format(channel)
@@ -184,7 +186,7 @@ def align_section_masks(animal, transforms):
     OUTPUT = fileLocationManager.aligned_rotated_and_padded_thumbnail_mask
     align_images(INPUT,OUTPUT,transforms)
 
-def align_images(INPUT,OUTPUT,transforms):
+def align_images(INPUT, OUTPUT, transforms):
     os.makedirs(OUTPUT, exist_ok=True)
     transforms = OrderedDict(sorted(transforms.items()))
     file_keys = []
