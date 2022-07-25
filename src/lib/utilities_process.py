@@ -143,7 +143,7 @@ def get_last_2d(data):
     m,n = data.shape[-2:]
     return data.flat[:m*n].reshape(m,n)
 
-def make_tifs(animal, channel,workers = 10):
+def make_tifs(animal, channel, workers = 10):
     """
     This method will:
         1. Fetch the sections from the database

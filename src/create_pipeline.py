@@ -64,14 +64,14 @@ if __name__ == '__main__':
     print(f'Create meta took {end - start} seconds')    
     # logger.info(f'Ceate meta took {end - start} seconds')
     start = timer()
-    #####pipeline.create_tifs()
+    pipeline.create_tifs()
     end = timer()
     print(f'Create tifs took {end - start} seconds')    
     # logger.info(f'Create tifs took {end - start} seconds')
     
     if step > 0:
         start = timer()
-        #####pipeline.create_preps()
+        pipeline.create_preps()
         #####pipeline.create_normalized()
         #####pipeline.create_masks()
         end = timer()
