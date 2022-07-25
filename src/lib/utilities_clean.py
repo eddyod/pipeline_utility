@@ -85,9 +85,8 @@ def masker(animal, channel, downsample, debug):
     Main method that starts the cleaning/rotating process.
     :param animal:  prep_id of the animal we are working on.
     :param channel:  channel {1,2,3}
-    :param flip:  flip or flop or nothing
-    :param rotation: usually 1 for rotating 90 degrees
-    :param full:  resolution, either full or thumbnail
+    :param downsample:  resolution, either full or thumbnail
+    :debug: boolean
     :return: nothing, writes to disk the cleaned image
     """
     sqlController = SqlController(animal)
@@ -101,8 +100,8 @@ def masker(animal, channel, downsample, debug):
     height = sqlController.scan_run.height
     rotation = sqlController.scan_run.rotation
     flip = sqlController.scan_run.flip
-    max_width = int(width * SCALING_FACTOR+500)
-    max_height = int(height * SCALING_FACTOR+500)
+    max_width = int(width * SCALING_FACTOR)
+    max_height = int(height * SCALING_FACTOR)
     stain = sqlController.histology.counterstain
     if channel == 1:
         sqlController.set_task(animal, CLEAN_CHANNEL_1_THUMBNAIL_WITH_MASK)

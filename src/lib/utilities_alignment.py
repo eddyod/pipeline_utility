@@ -196,7 +196,6 @@ def parameter_elastix_parameter_file_to_dict(filename):
 def create_transforms(transforms, downsample):
     """
     Changes the dictionary of transforms to the correct resolution
-    :param animal: prep_id of animal we are working on
     :param transforms: dictionary of filename:array of transforms
     :param transforms_resol:
     :param downsample; either true for thumbnails, false for full resolution images
@@ -207,6 +206,7 @@ def create_transforms(transforms, downsample):
         transforms_scale_factor = 1
     else:
         transforms_scale_factor = 32
+
 
     tf_mat_mult_factor = np.array([[1, 1, transforms_scale_factor], [1, 1, transforms_scale_factor]])
 
@@ -378,7 +378,6 @@ def process_imageXXX(file_key):
 
 def process_image(file_key):
     _, infile, outfile, T = file_key
-    print(f'process image {outfile}')
     im1 = Image.open(infile)
     im2 = im1.transform((im1.size), Image.AFFINE, T.flatten()[:6], resample=Image.NEAREST)
     im2.save(outfile)
