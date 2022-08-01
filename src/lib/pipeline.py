@@ -15,7 +15,7 @@ from lib.utilities_meta import make_meta
 from lib.utilities_preps import make_full_resolution, make_low_resolution, set_task_preps
 from lib.utilities_process import make_tifs, make_scenes
 from lib.utilities_normalized import create_normalization
-from lib.utilities_create_masks import create_final, create_final_fill,create_mask
+from lib.utilities_create_masks import create_final, create_mask
 from lib.utilities_histogram import make_combined, make_histogram
 from lib.utilities_clean import masker
 from lib.utilities_elastics import create_elastix
@@ -30,7 +30,7 @@ class Pipeline:
     A class that sets the methods and attributes for the Active Brain Atlas
     image processing pipeline
     '''
-    def __init__(self, animal, channel=1, downsample=True, debug=False):
+    def __init__(self, animal, fillbottom=False, channel=1, downsample=True, debug=False):
         '''
         Set i[ the pipeline. Only required parameter is animal
         :param animal: string, usually something like DKXX
@@ -41,6 +41,7 @@ class Pipeline:
         self.channel = channel
         self.downsample = downsample
         self.debug = debug
+        self.fillbottom = fillbottom
         self.fileLocationManager =  FileLocationManager(animal)
         self.hostname = self.get_hostname()
         self.load_parallel_settings()
@@ -148,12 +149,8 @@ class Pipeline:
         Only run on the downsampled images
         '''
         if self.channel == 1 and self.downsample:
-            create_final(self.animal)
-    
-    def create_masks_fill(self):
-        if self.channel == 1 and self.downsample:
-            create_final_fill(self.animal)
-    
+            create_final(self.animal, self.fillbottom)
+        
     def create_histograms(self, single):
         '''
         Creates histograms for each image (single=True)

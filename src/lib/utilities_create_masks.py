@@ -44,7 +44,7 @@ def combine_dims(a):
     return a3
 
 
-def create_final(animal):
+def create_final(animal, fillbottom=False):
     fileLocationManager = FileLocationManager(animal)
     COLORED = os.path.join(fileLocationManager.prep, 'masks', 'thumbnail_colored')
     MASKS = os.path.join(fileLocationManager.prep, 'masks', 'thumbnail_masked')
@@ -62,36 +62,23 @@ def create_final(animal):
         mask = cv2.imread(filepath, cv2.IMREAD_UNCHANGED)
         mask = mask[:,:,2]
         mask[mask>0] = 255
-        cv2.imwrite(maskpath, mask.astype(np.uint8))
+        mask = mask.astype(np.uint8)
+        cv2.imwrite(maskpath, mask)
 
-def create_final_fill(animal):
-    fileLocationManager = FileLocationManager(animal)
-    INPUT = os.path.join(fileLocationManager.prep, 'masks', 'thumbnail_masked')
-    MASKS = os.path.join(fileLocationManager.prep, 'masks', 'thumbnail_masked_filled')
-    os.makedirs(MASKS, exist_ok=True)
-    # error = test_dir(animal, INPUT, True, same_size=False)
-    # if len(error) > 0:
-    #     print(error)
-    #     sys.exit()
-    files = sorted(os.listdir(INPUT))
-    for file in files:
-        maskpath = os.path.join(INPUT, file)
-        maskfillpath = os.path.join(MASKS, file)   
-        maskfile = Image.open(maskpath) # 
-        mask = np.array(maskfile)
-        #firstindex = np.where(mask==255)[0][0]
-        white = np.where(mask==255)
-        whiterows = white[0]
-        whitecols = white[1]
-        firstrow = whiterows[0]
-        lastrow = whiterows[-1]
-        #firstcol = whitecols[0]
-        lastcol = whitecols[-1]
-        #toppoint = (firstrow, firstcol)
-        #bottompt = (lastrow, lastcol)
-        #print(file, toppoint, bottompt, mask.shape)
-        mask[firstrow:lastrow, 0:lastcol] = 255
-        cv2.imwrite(maskfillpath, mask.astype(np.uint8))
+    if fillbottom:
+        for file in files:
+            maskpath = os.path.join(MASKS, file)
+            maskfillpath = os.path.join(MASKS, file)   
+            maskfile = Image.open(maskpath) # 
+            mask = np.array(maskfile)
+            white = np.where(mask==255)
+            whiterows = white[0]
+            whitecols = white[1]
+            firstrow = whiterows[0]
+            lastrow = whiterows[-1]
+            lastcol = whitecols[-1]
+            mask[firstrow:lastrow, 0:lastcol] = 255
+            cv2.imwrite(maskfillpath, mask.astype(np.uint8))
  
 def get_model_instance_segmentation(num_classes):
     # load an instance segmentation model pre-trained pre-trained on COCO
