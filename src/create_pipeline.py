@@ -75,7 +75,7 @@ if __name__ == '__main__':
         start = timer()
         #####TODO checkcomment pipeline.create_preps()
         #####TODO checkcomment pipeline.create_normalized()
-        #####TODO checkcomment pipeline.create_masks()
+        pipeline.create_masks()
         end = timer()
         print(f'Creating normalized and masks took {end - start} seconds')    
         # logger.info(f'Create preps, normalized and masks took {end - start} seconds')
