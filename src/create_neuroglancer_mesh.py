@@ -17,7 +17,7 @@ from tqdm import tqdm
 
 from lib.file_location import FileLocationManager
 from lib.sqlcontroller import SqlController
-from lib.utilities_cvat_neuroglancer import NumpyToNeuroglancer, calculate_chunks
+from lib.utilities_cvat_neuroglancer import NumpyToNeuroglancer, calculate_chunks, set_ranges
 from lib.utilities_process import get_cpus, get_hostname
 
 
@@ -28,18 +28,14 @@ def create_mesh(animal, limit, mse, downsample):
     fileLocationManager = FileLocationManager(animal)
     xy = sqlController.scan_run.resolution * 1000
     z = sqlController.scan_run.zresolution * 1000
-    INPUT = os.path.join(fileLocationManager.prep, 'CH1', 'full')
+    INPUT = os.path.join(fileLocationManager.prep, 'CH1', 'thumbnail_aligned')
     OUTPUT1_DIR = os.path.join(fileLocationManager.neuroglancer_data, 'mesh_input')
     OUTPUT2_DIR = os.path.join(fileLocationManager.neuroglancer_data, 'mesh')
-    if downsample:
-        xy = xy * 10
-        z = z * 10
-        INPUT = os.path.join(fileLocationManager.prep, 'CH1', 'downsampled_10')
-        OUTPUT1_DIR = os.path.join(fileLocationManager.neuroglancer_data, 'mesh_input')
-        OUTPUT2_DIR = os.path.join(fileLocationManager.neuroglancer_data, 'mesh_10')
-    scales = (xy, xy, z)
     channel = 1
+    if downsample:
+        xy *= 32
 
+    scales = (xy, xy, z)
     if 'mothra' in get_hostname():
         print('Cleaning output dirs:')
         print(OUTPUT1_DIR)
@@ -58,11 +54,12 @@ def create_mesh(animal, limit, mse, downsample):
     midpoint = len_files // 2
     midfilepath = os.path.join(INPUT, files[midpoint])
     midfile = io.imread(midfilepath)
+    midfile = set_ranges(midfile)
     data_type = midfile.dtype
     if limit > 0:
-        start = midpoint - limit
-        end = midpoint + limit
-        files = files[start:end]
+        _start = midpoint - limit
+        _end = midpoint + limit
+        files = files[_start:_end]
     #image = np.load('/net/birdstore/Active_Atlas_Data/data_root/pipeline_data/structures/allen/allen.npy')
     ids = np.unique(midfile)
     #ids = {'infrahypoglossal': 200, 'perifacial': 210, 'suprahypoglossal': 220}
@@ -72,26 +69,26 @@ def create_mesh(animal, limit, mse, downsample):
     print('volume size', volume_size)
     print('scales', scales)
     print('chunks', chunks)
+    print(f'ids {ids}')
     ng = NumpyToNeuroglancer(animal, None, scales, layer_type='segmentation', 
         data_type=data_type, chunk_size=chunks)
-    progress_id = sqlController.get_progress_id(downsample, channel, 'NEUROGLANCER')
 
-    ng.init_precomputed(OUTPUT1_DIR, volume_size, progress_id=progress_id)
+    ng.init_precomputed(OUTPUT1_DIR, volume_size)
 
     file_keys = []
     for i,f in enumerate(tqdm(files)):
         infile = os.path.join(INPUT, f)
         file_keys.append([i, infile])
-        #ng.process_image([i, infile])
+        ng.process_image([i, infile])
     #sys.exit()
-
     start = timer()
+    """
     workers, cpus = get_cpus()
     print(f'Working on {len(file_keys)} files with {workers} cpus')
     with ProcessPoolExecutor(max_workers=workers) as executor:
         executor.map(ng.process_image, sorted(file_keys), chunksize=1)
         executor.shutdown(wait=True)
-
+    """
     ng.precomputed_vol.cache.flush()
 
     end = timer()

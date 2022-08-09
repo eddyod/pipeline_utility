@@ -16,6 +16,15 @@ from collections import defaultdict
 from lib.sqlcontroller import SqlController, file_processed, set_file_completed
 from lib.utilities_process import get_cpus
 
+
+def set_ranges(img):
+    img = (img/256).astype('uint8')
+    step = 32
+    for i in range(0,256,step):
+        img[(img > i) & (img <= i+step)] = i+step
+    return img
+
+
 def calculate_chunks(downsample, mip):
     """
     Chunks default to 64,64,64 so we want different chunks at 
@@ -144,7 +153,7 @@ class NumpyToNeuroglancer():
         self.animal = animal
         self.num_channels = num_channels
 
-    def init_precomputed(self, path, volume_size, starting_points=None, progress_id=None):
+    def init_precomputed(self, path, volume_size, starting_points=None):
         info = CloudVolume.create_new_info(
             num_channels=self.num_channels,
             layer_type=self.layer_type,  # 'image' or 'segmentation'
@@ -156,7 +165,6 @@ class NumpyToNeuroglancer():
             volume_size=volume_size,  # X,Y,Z size in voxels
         )
         self.starting_points = starting_points
-        self.progress_id = progress_id
         self.precomputed_vol = CloudVolume(f'file://{path}', mip=0, info=info, compress=True, progress=False)
         self.precomputed_vol.commit_info()
         self.precomputed_vol.commit_provenance()
@@ -292,13 +300,9 @@ class NumpyToNeuroglancer():
 
     def process_image(self, file_key):
         index, infile = file_key
-        basefile = os.path.basename(infile)
-        completed = file_processed(self.animal, self.progress_id, basefile)
-        if completed:
-            print(f"Section {index} already processed, skipping ")
-            return
         try:
             img = io.imread(infile, img_num=0)
+            img = set_ranges(img)
         except IOError as ioe:
             print(f'could not open {infile} {ioe}')
             return
@@ -312,7 +316,6 @@ class NumpyToNeuroglancer():
         except:
             print(f'could not set {infile} to precomputed')
             return
-        set_file_completed(self.animal, self.progress_id, basefile)
         del img
         return
 
