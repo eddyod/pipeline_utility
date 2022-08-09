@@ -32,10 +32,10 @@ def get_cpus():
     nmax = 4
     usecpus = (nmax,nmax)
     cpus = {}
-    cpus['mothra'] = (1,1)
+    cpus['mothra'] = (4,4)
     cpus['muralis'] = (10,20)
     cpus['basalis'] = (4,4)
-    cpus['ratto'] = (3,3)
+    cpus['ratto'] = (6,6)
     hostname = get_hostname()
     if hostname in cpus.keys():
         usecpus = cpus[hostname]

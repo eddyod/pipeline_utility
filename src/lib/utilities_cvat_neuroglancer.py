@@ -19,7 +19,7 @@ from lib.utilities_process import get_cpus
 
 def set_ranges(img):
     img = (img/256).astype('uint8')
-    step = 32
+    step = 64
     for i in range(0,256,step):
         img[(img > i) & (img <= i+step)] = i+step
     return img

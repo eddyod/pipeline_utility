@@ -35,7 +35,7 @@ def create_mesh(animal, limit, mse, downsample):
     if downsample:
         xy *= 32
 
-    scales = (xy, xy, z)
+    scales = (int(xy), int(xy), int(z))
     if 'mothra' in get_hostname():
         print('Cleaning output dirs:')
         print(OUTPUT1_DIR)
@@ -79,16 +79,16 @@ def create_mesh(animal, limit, mse, downsample):
     for i,f in enumerate(tqdm(files)):
         infile = os.path.join(INPUT, f)
         file_keys.append([i, infile])
-        ng.process_image([i, infile])
+        #ng.process_image([i, infile])
     #sys.exit()
     start = timer()
-    """
+    
     workers, cpus = get_cpus()
     print(f'Working on {len(file_keys)} files with {workers} cpus')
     with ProcessPoolExecutor(max_workers=workers) as executor:
         executor.map(ng.process_image, sorted(file_keys), chunksize=1)
         executor.shutdown(wait=True)
-    """
+    
     ng.precomputed_vol.cache.flush()
 
     end = timer()
