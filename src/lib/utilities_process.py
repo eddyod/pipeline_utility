@@ -87,11 +87,11 @@ def workernoshell(cmd):
 
 def test_dir(animal, directory, downsample=True, same_size=False):
     error = ""
-    #thumbnail resolution ntb is 10400 and min size of DK52 is 16074
+    #normalized resolution ntb is 10400 and min size of DK37 is 1924
     #thumbnail resolution thion is 14464 and min size for MD585 is 21954
     # so 3000 is a good min size
     # min size on NTB is 8.8K
-    starting_size = 3000
+    starting_size = 1500
     NO_FILES = 100 # arbitray number of files to check for. There should
     # always be more than this
     min_size = starting_size * SCALING_FACTOR * 1000
