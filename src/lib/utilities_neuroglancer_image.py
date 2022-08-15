@@ -41,12 +41,10 @@ def create_neuroglancer(animal, channel, downsample, debug=False):
     scales = get_scales(animal,downsample)
     workers, _ = get_cpus()
     chunks = calculate_chunks(downsample, -1)
-    progress_id = sqlController.get_progress_id(downsample, channel, 'NEUROGLANCER')
     sqlController.session.close()
     if not downsample:
         INPUT = os.path.join(fileLocationManager.prep, channel_dir, 'full_aligned')
         channel_outdir = f'C{channel}_rechunkme'
-        sqlController.set_task(animal, progress_id)
         if sqlController.histology.counterstain != None:
             if 'thion' in sqlController.histology.counterstain:
                 sqlController.set_task(animal, RUN_PRECOMPUTE_NEUROGLANCER_CHANNEL_2_FULL_RES)
@@ -59,7 +57,7 @@ def create_neuroglancer(animal, channel, downsample, debug=False):
         sys.exit()
     midfile,file_keys,volume_size,num_channels = get_file_information(INPUT)
     ng = NumpyToNeuroglancer(animal, None, scales, 'image', midfile.dtype, num_channels=num_channels, chunk_size=chunks)
-    ng.init_precomputed(OUTPUT_DIR, volume_size, progress_id=progress_id)
+    ng.init_precomputed(OUTPUT_DIR, volume_size)
     with ProcessPoolExecutor(max_workers=workers) as executor:
         if num_channels == 1:
             executor.map(ng.process_image, sorted(file_keys))
