@@ -61,7 +61,7 @@ if __name__ == '__main__':
     print(f'Check programs took {end - start} seconds')    
     # logger.info(f'Check programs took {end - start} seconds')
     start = timer()
-    #####TODO checkcomment pipeline.create_meta()
+    pipeline.create_meta()
     end = timer()
     print(f'Create meta took {end - start} seconds')    
     # logger.info(f'Ceate meta took {end - start} seconds')
