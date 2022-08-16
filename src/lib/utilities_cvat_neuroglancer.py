@@ -302,7 +302,6 @@ class NumpyToNeuroglancer():
         index, infile = file_key
         try:
             img = io.imread(infile, img_num=0)
-            img = set_ranges(img)
         except IOError as ioe:
             print(f'could not open {infile} {ioe}')
             return
