@@ -46,7 +46,13 @@ def create_downsamples(animal, channel, downsample):
         cv = CloudVolume(outpath, mip)
         chunks = calculate_chunks(downsample, mip)
         factors = calculate_factors(downsample, mip)
-        tasks = tc.create_downsampling_tasks(cv.layer_cloudpath, mip=mip, num_mips=1, factor=factors, preserve_chunk_size=False,
-            compress=True, chunk_size=chunks)
+        tasks = tc.create_downsampling_tasks(
+            cv.layer_cloudpath, 
+            mip=mip, 
+            num_mips=1, 
+            factor=factors, 
+            preserve_chunk_size=False,
+            compress=True, 
+            chunk_size=chunks)
         tq.insert(tasks)
         tq.execute()
