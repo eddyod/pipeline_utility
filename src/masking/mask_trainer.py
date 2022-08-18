@@ -116,14 +116,12 @@ def get_model_instance_segmentation(num_classes):
     return model
 
 def get_transform(train):
-    transformeds = []
-    # converts the image, a PIL image, into a PyTorch Tensor
-    transformeds.append(T.ToTensor())
+    transforms = []
+    transforms.append(T.PILToTensor())
+    transforms.append(T.ConvertImageDtype(torch.float))
     if train:
-        # during training, randomly flip the training images
-        # and ground-truth for data augmentation
-        transformeds.append(T.RandomHorizontalFlip(0.5))
-    return T.Compose(transformeds)
+        transforms.append(T.RandomHorizontalFlip(0.5))
+    return T.Compose(transforms)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Work on Animal')
