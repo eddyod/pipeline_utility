@@ -10,6 +10,10 @@ import numpy as np
 import torch
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 
+def collate_fn(batch):
+    return tuple(zip(*batch))
+
+
 __all__ = [
     "make_grid",
     "save_image",
