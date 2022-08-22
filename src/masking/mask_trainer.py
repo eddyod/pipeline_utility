@@ -174,7 +174,7 @@ if __name__ == '__main__':
     dataset = torch.utils.data.Subset(dataset, indices[:-test_cases])
     dataset_test = torch.utils.data.Subset(dataset_test, indices[-test_cases:])
     # define training and validation data loaders
-    workers = 2
+    workers = 1
     data_loader = torch.utils.data.DataLoader(
                 dataset, batch_size=1, shuffle=True, num_workers=workers,
                 collate_fn=utils.collate_fn)
