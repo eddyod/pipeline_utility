@@ -174,9 +174,9 @@ if __name__ == '__main__':
     dataset = torch.utils.data.Subset(dataset, indices[:-test_cases])
     dataset_test = torch.utils.data.Subset(dataset_test, indices[-test_cases:])
     # define training and validation data loaders
-    workers = 4
+    workers = 2
     data_loader = torch.utils.data.DataLoader(
-                dataset, batch_size=2, shuffle=True, num_workers=workers,
+                dataset, batch_size=1, shuffle=True, num_workers=workers,
                 collate_fn=utils.collate_fn)
     data_loader_test = torch.utils.data.DataLoader(
             dataset_test, batch_size=1, shuffle=False, num_workers=workers,
@@ -206,7 +206,7 @@ if __name__ == '__main__':
         # 1 epoch takes 8 minutes on muralis
         for epoch in range(epochs):
             # train for one epoch, printing every 10 iterations
-            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=100)
+            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500)
             # update the learning rate
             lr_scheduler.step()
             # evaluate on the test dataset
