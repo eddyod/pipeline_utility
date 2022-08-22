@@ -129,7 +129,7 @@ def test_model(ROOT, animal):
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(weights="DEFAULT")
     dataset = MaskDataset(ROOT, animal, transforms = get_transform(train=True))
     data_loader = torch.utils.data.DataLoader(
-    dataset, batch_size=2, shuffle=True, num_workers=2,
+    dataset, batch_size=1, shuffle=True, num_workers=1,
     collate_fn=utils.collate_fn)
     # For Training
     images,targets = next(iter(data_loader))
@@ -203,10 +203,10 @@ if __name__ == '__main__':
         # and a learning rate scheduler which decreases the learning rate by # 10x every 3 epochs
         lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
 
-        # 1 epoch takes 8 minutes on muralis
+        # 1 epoch takes 30 minutes on ratto
         for epoch in range(epochs):
-            # train for one epoch, printing every 10 iterations
-            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500)
+            # train for one epoch, printing every 100 iterations
+            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=100)
             # update the learning rate
             lr_scheduler.step()
             # evaluate on the test dataset
