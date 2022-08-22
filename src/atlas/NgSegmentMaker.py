@@ -42,6 +42,16 @@ class NgConverter(NumpyToNeuroglancer):
         self.add_segment_properties(segment_properties)
         self.add_downsampled_volumes()
         self.add_segmentation_mesh()
+
+    def create_neuroglancer_files(self,output_dir,segment_properties):
+        self.init_precomputed(output_dir)
+        self.add_segment_properties(segment_properties)
+        self.add_downsampled_volumes()
+        self.add_segmentation_mesh()
+
+    def create_neuroglancer_image(self, output_dir):
+        self.init_precomputed(output_dir)
+        self.add_downsampled_volumes()
         
         
 class NgSegmentMaker(NgConverter):

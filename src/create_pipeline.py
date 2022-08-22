@@ -60,7 +60,7 @@ if __name__ == '__main__':
     end = timer()
     print(f'Check programs took {end - start} seconds')    
     # logger.info(f'Check programs took {end - start} seconds')
-    """
+    
     start = timer()
     pipeline.create_meta()
     end = timer()
@@ -100,7 +100,7 @@ if __name__ == '__main__':
         end = timer()
         print(f'Creating elastix and alignment took {end - start} seconds')    
         # logger.info(f'Create elastix and alignment took {end - start} seconds')
-    """
+    
 
     if step > 3:
         start = timer()

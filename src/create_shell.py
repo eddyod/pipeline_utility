@@ -23,6 +23,21 @@ from scipy.signal import savgol_filter
 from lib.utilities_process import get_image_size
 import scipy
 
+def mask_to_shell(mask):
+    sub_contours = measure.find_contours(mask, 1)
+
+    sub_shells = []
+    for sub_contour in sub_contours:
+        sub_contour.T[[0, 1]] = sub_contour.T[[1, 0]]
+        pts = sub_contour.astype(np.int32).reshape((-1, 1, 2))
+
+        sub_shell = np.zeros(mask.shape, dtype='uint8')
+        sub_shell = cv2.polylines(sub_shell, [pts], True, 1, 5, lineType=cv2.LINE_AA)
+        sub_shells.append(sub_shell)
+    shell = np.array(sub_shells).sum(axis=0)
+    
+    return shell
+
 def align_masks(animal):
     rotate_and_pad_masks(animal)
     transforms = parse_elastix(animal)
@@ -55,16 +70,17 @@ def rotate_and_pad_masks(animal):
         if flip == 'flop':
             mask = np.flip(mask, axis=1)
         mask = place_image(mask, infile, max_width, max_height, 0)
-        tiff.imsave(outfile, mask)
+        tiff.imwrite(outfile, mask)
 
-def create_shell(animal, DEBUG=False):
+def create_shell(animal, layer_type):
     '''
     Gets some info from the database used to create the numpy volume from
     the masks. It then turns that numpy volume into a neuroglancer precomputed
-    mesh
+    mesh or image
     :param animal:
-    :param DEBUG:
+    :param layer_type:
     '''
+    align_masks(animal)
     sqlController = SqlController(animal)
     fileLocationManager = FileLocationManager(animal)
     INPUT = fileLocationManager.aligned_rotated_and_padded_thumbnail_mask
@@ -73,24 +89,19 @@ def create_shell(animal, DEBUG=False):
         print(error)
         sys.exit()
 
-    OUTPUT_DIR = os.path.join(fileLocationManager.neuroglancer_data, 'shell')
+    if layer_type == 'image':
+        dir = 'perimeter'
+    else:
+        dir = 'shell'
+    OUTPUT_DIR = os.path.join(fileLocationManager.neuroglancer_data, dir)
     if os.path.exists(OUTPUT_DIR):
         shutil.rmtree(OUTPUT_DIR)
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     files = sorted(os.listdir(INPUT))
-    len_files = len(files)
-    midpoint = len_files // 2
-    if DEBUG:
-        limit = 50
-        start = midpoint - limit
-        end = midpoint + limit
-        files = files[start:end]
     volume = []
     for file in tqdm(files):
         tif = io.imread(os.path.join(INPUT, file))
-        # tif = (tif>125)*255
-        # tif = mask_to_shell(tif)
         volume.append(tif)
     volume = np.array(volume).astype('uint8')
     volume = np.swapaxes(volume, 0, 2)
@@ -100,27 +111,37 @@ def create_shell(animal, DEBUG=False):
     ids = [(i,i) for i in ids]
     resolution = sqlController.scan_run.resolution
     resolution = int(resolution * 1000 / SCALING_FACTOR)
-    ng = NgConverter(volume, [resolution, resolution, 20000], offset=[0,0,0])
-    ng.create_neuroglancer_files(OUTPUT_DIR,ids)
+    ng = NgConverter(volume, [resolution, resolution, 20000], offset=[0,0,0], layer_type=layer_type)
+    if layer_type == 'segmentation':
+        ng.create_neuroglancer_files(OUTPUT_DIR,ids)
+    else:
+        ng.create_neuroglancer_image(OUTPUT_DIR)
 
-def create_shell_threshold(animal):
-    sqlController = SqlController(animal)
+
+
+
+def create_shell_mask(animal):
     fileLocationManager = FileLocationManager(animal)
-    input = fileLocationManager.get_thumbnail_aligned()
-    files = os.listdir(input)
+    INPUT = fileLocationManager.aligned_rotated_and_padded_thumbnail_mask
+    files = os.listdir(INPUT)
     files = sorted(files)
-    rotation = sqlController.scan_run.rotation
-    flip = sqlController.scan_run.flip
     volume = []
-    OUTPUT_DIR = os.path.join(fileLocationManager.neuroglancer_data, 'shell_threshold')
-    if os.path.exists(OUTPUT_DIR):
-        shutil.rmtree(OUTPUT_DIR)
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
     for filei in tqdm(files):
-        img = io.imread(os.path.join(input,filei))
-        img =  rotate_image(img, filei, 0)
-        img = np.flip(img)
-        # img = np.flip(img, axis=1)
+        img = io.imread(os.path.join(INPUT, filei))
+        sub_shell = mask_to_shell(img)
+        volume.append(sub_shell)
+
+    create_volume(animal, volume)
+
+
+def create_shell_thumbnail(animal):
+    fileLocationManager = FileLocationManager(animal)
+    INPUT = fileLocationManager.get_thumbnail_aligned()
+    files = os.listdir(INPUT)
+    files = sorted(files)
+    volume = []
+    for filei in tqdm(files):
+        img = io.imread(os.path.join(INPUT, filei))
         mask = img>np.average(img)*0.5
         _,masks,stats,_=cv2.connectedComponentsWithStats(np.int8(mask))
         seg_sizes = stats[:,-1]
@@ -135,6 +156,16 @@ def create_shell_threshold(animal):
         sub_shell = np.zeros(mask.shape, dtype='uint8')
         sub_shell = cv2.polylines(sub_shell, [pts], True, 1, 5, lineType=cv2.LINE_AA)
         volume.append(sub_shell)
+
+    create_volume(animal, volume)
+
+def create_volume(animal, volume):
+    fileLocationManager = FileLocationManager(animal)
+    OUTPUT_DIR = os.path.join(fileLocationManager.neuroglancer_data, 'shell')
+    if os.path.exists(OUTPUT_DIR):
+        shutil.rmtree(OUTPUT_DIR)
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    sqlController = SqlController(animal)
     volume = np.array(volume).astype('uint8')
     volume = np.swapaxes(volume, 0, 2)
     volume = (volume!=0).astype('uint8')
@@ -143,11 +174,19 @@ def create_shell_threshold(animal):
     resolution = sqlController.scan_run.resolution
     resolution = int(resolution * 1000 / SCALING_FACTOR)
     ng = NgConverter(volume, [resolution, resolution, 20000], offset=[0,0,0])
-    ng.create_neuroglancer_files(OUTPUT_DIR,ids)
+    ng.create_neuroglancer_files(OUTPUT_DIR, ids)
+
 
 if __name__ == '__main__':
-    animal = 'DK55'
-    align_masks(animal)
-    
-    # create_shell_threshold(animal)
-    create_shell(animal)
+    parser = argparse.ArgumentParser(description='Work on Animal')
+    parser.add_argument('--animal', help='Enter the animal', required=True)
+    parser.add_argument('--layer_type', help='Enter the layer_type: segmentation|image', required=True)
+    args = parser.parse_args()
+    animal = args.animal
+    layer_type = args.layer_type.lower()
+    layers = ['segmentation', 'image']
+    if layer_type not in layers:
+        print(f'Layer type is incorrect {layer_type}')
+        sys.exit()
+    create_shell_thumbnail(animal)
+
