@@ -205,8 +205,8 @@ if __name__ == '__main__':
 
         # 1 epoch takes 30 minutes on ratto
         for epoch in range(epochs):
-            # train for one epoch, printing every 100 iterations
-            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=100)
+            # train for one epoch, printing every 10 iterations
+            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=10)
             # update the learning rate
             lr_scheduler.step()
             # evaluate on the test dataset
