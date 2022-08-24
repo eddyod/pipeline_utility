@@ -2,14 +2,12 @@ import argparse
 import os
 import sys
 from pathlib import Path
-import numpy as np
 import torch
 import torch.utils.data
-from PIL import Image
 import torchvision
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
-
+from mask_class import MaskDataset
 PIPELINE_ROOT = Path('./src').absolute()
 sys.path.append(PIPELINE_ROOT.as_posix())
 
@@ -17,77 +15,11 @@ sys.path.append(PIPELINE_ROOT.as_posix())
 from engine import train_one_epoch, evaluate
 import utils
 import transforms as T
-import cv2
 
 ROOT = '/net/birdstore/Active_Atlas_Data/data_root/brains_info/masks'
+ROOT = '/home/eddyod/masks'
 
 
-
-class MaskDataset(torch.utils.data.Dataset):
-    def __init__(self, root, animal=None, transforms=None):
-        self.root = root
-        self.animal = animal
-        self.transforms = transforms
-        self.imgs = sorted(os.listdir(os.path.join(root, 'normalized')))
-        self.masks = sorted(os.listdir(os.path.join(root, 'thumbnail_masked')))
-        if self.animal is not None:
-            self.imgs = sorted([img for img in self.imgs if img.startswith(animal)])
-            self.masks = sorted([img for img in self.masks if img.startswith(animal)])
-
-    def __getitem__(self, idx):
-        # load images and bounding boxes
-        img_path = os.path.join(self.root, 'normalized', self.imgs[idx])
-        mask_path = os.path.join(self.root, 'thumbnail_masked', self.masks[idx])
-        img = Image.open(img_path).convert("L")
-        mask = Image.open(mask_path) # 
-        mask = np.array(mask)
-        mask[mask > 0] = 255
-        ret, thresh = cv2.threshold(mask, 200, 255, 0)
-        contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        boxes = []
-        for i, contour in enumerate(contours):
-            x,y,w,h = cv2.boundingRect(contour)
-            area = cv2.contourArea(contour)
-            if area > 100:
-                xmin = int(round(x))
-                ymin = int(round(y))
-                xmax = int(round(x+w))
-                ymax = int(round(y+h))
-                color = (i+10) * 10
-                cv2.fillPoly(mask, [contour], color);
-                boxes.append([xmin, ymin, xmax, ymax])
-        obj_ids = np.unique(mask)
-        obj_ids = obj_ids[1:]
-        masks = mask == obj_ids[:, None, None]
-        num_objs = len(obj_ids)
-
-
-
-        # convert everything into a torch.Tensor
-        boxes = torch.as_tensor(boxes, dtype=torch.float32)
-        # there is only one class
-        labels = torch.ones((num_objs,), dtype=torch.int64)
-        masks = torch.as_tensor(masks, dtype=torch.uint8)
-
-        image_id = torch.tensor([idx])
-        area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])        
-
-        # suppose all instances are not crowd
-        iscrowd = torch.zeros((num_objs,), dtype=torch.int64)
-        target = {}
-        target["boxes"] = boxes
-        target["labels"] = labels
-        target["image_id"] = image_id
-        target["area"] = area
-        target["iscrowd"] = iscrowd
-        target["masks"] = masks
-
-        if self.transforms is not None:
-            img, target = self.transforms(img, target)
-            return img, target
-
-    def __len__(self):
-        return len(self.imgs)
 
 
 def get_model(num_classes):

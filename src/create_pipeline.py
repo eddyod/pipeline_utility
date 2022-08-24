@@ -62,17 +62,17 @@ if __name__ == '__main__':
     # logger.info(f'Check programs took {end - start} seconds')
     
     start = timer()
-    pipeline.create_meta()
+    ##### TODO pipeline.create_meta()
     end = timer()
     print(f'Create meta took {end - start} seconds')    
     # logger.info(f'Ceate meta took {end - start} seconds')
     start = timer()
-    pipeline.create_tifs()
+    ##### TODO pipeline.create_tifs()
     end = timer()
     print(f'Create tifs took {end - start} seconds')    
     # logger.info(f'Create tifs took {end - start} seconds')
 
-    if step > 0:
+    if step == 0:
         start = timer()
         pipeline.create_preps()
         pipeline.create_normalized()
@@ -80,7 +80,7 @@ if __name__ == '__main__':
         end = timer()
         print(f'Creating normalized and masks took {end - start} seconds')    
         # logger.info(f'Create preps, normalized and masks took {end - start} seconds')
-    if step > 1:
+    if step == 1:
         start = timer()
         pipeline.create_masks_final()
         print('\tFinished create_masks final')    
@@ -93,7 +93,7 @@ if __name__ == '__main__':
         end = timer()
         print(f'Creating masks, cleaning and histograms took {end - start} seconds')    
         # logger.info(f'Creating masks, cleaning and histograms took {end - start} seconds')
-    if step > 2:
+    if step == 2:
         start = timer()
         pipeline.create_elastix()
         pipeline.create_aligned()
@@ -102,7 +102,7 @@ if __name__ == '__main__':
         # logger.info(f'Create elastix and alignment took {end - start} seconds')
     
 
-    if step > 3:
+    if step == 3:
         start = timer()
         pipeline.create_neuroglancer_image()
         pipeline.create_downsampling()

@@ -2,6 +2,7 @@ import torch
 
 x = torch.rand(5, 3)
 print(x)
+print(torch.cuda.get_arch_list())
 
 if torch.cuda.is_available():
    print ("Cuda is available")
