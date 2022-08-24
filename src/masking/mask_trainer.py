@@ -14,7 +14,6 @@ import utils
 from engine import train_one_epoch, evaluate
 
 ROOT = '/net/birdstore/Active_Atlas_Data/data_root/brains_info/masks'
-ROOT = '/home/eddyod/masks'
 
 
 if __name__ == '__main__':
@@ -44,7 +43,7 @@ if __name__ == '__main__':
     dataset = torch.utils.data.Subset(dataset, indices[:-test_cases])
     dataset_test = torch.utils.data.Subset(dataset_test, indices[-test_cases:])
     # define training and validation data loaders
-    workers = 4
+    workers = 1
     data_loader = torch.utils.data.DataLoader(
                 dataset, batch_size=2, shuffle=True, num_workers=workers,
                 collate_fn=utils.collate_fn)
