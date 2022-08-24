@@ -5,79 +5,16 @@ from pathlib import Path
 import torch
 import torch.utils.data
 import torchvision
-from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
-from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
-from mask_class import MaskDataset
+from mask_class import MaskDataset, get_model_instance_segmentation, test_model, get_transform
 PIPELINE_ROOT = Path('./src').absolute()
 sys.path.append(PIPELINE_ROOT.as_posix())
-
+import utils
 
 from engine import train_one_epoch, evaluate
-import utils
-import transforms as T
 
 ROOT = '/net/birdstore/Active_Atlas_Data/data_root/brains_info/masks'
 ROOT = '/home/eddyod/masks'
 
-
-
-
-def get_model(num_classes):
-    # load an object detection model pre-trained on COCO
-    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(weights="DEFAULT")
-    # get the number of input features for the classifier
-    in_features = model.roi_heads.box_predictor.cls_score.in_features
-    # replace the pre-trained head with a new on
-    model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
-
-    return model
-
-
-def get_model_instance_segmentation(num_classes):
-    # load an instance segmentation model pre-trained on COCO
-    model = torchvision.models.detection.maskrcnn_resnet50_fpn(weights="DEFAULT")
-    # get number of input features for the classifier
-    in_features = model.roi_heads.box_predictor.cls_score.in_features
-    # replace the pre-trained head with a new one
-    model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
-
-    # now get the number of input features for the mask classifier
-    in_features_mask = model.roi_heads.mask_predictor.conv5_mask.in_channels
-    hidden_layer = 256
-    # and replace the mask predictor with a new one
-    model.roi_heads.mask_predictor = MaskRCNNPredictor(in_features_mask, hidden_layer, num_classes)
-
-    return model
-
-def get_transform(train):
-    transforms = []
-    transforms.append(T.PILToTensor())
-    transforms.append(T.ConvertImageDtype(torch.float))
-    if train:
-        transforms.append(T.RandomHorizontalFlip(0.5))
-    return T.Compose(transforms)
-
-def test_model(ROOT, animal):
-    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(weights="DEFAULT")
-    dataset = MaskDataset(ROOT, animal, transforms = get_transform(train=True))
-    data_loader = torch.utils.data.DataLoader(
-    dataset, batch_size=1, shuffle=True, num_workers=1,
-    collate_fn=utils.collate_fn)
-    # For Training
-    images,targets = next(iter(data_loader))
-    images = list(image for image in images)
-    targets = [{k: v for k, v in t.items()} for t in targets]
-    output = model(images,targets)   # Returns losses and detections
-    print('Output')
-    print(output)
-    # For inference
-    model.eval()
-    x = [torch.rand(3, 300, 400), torch.rand(3, 500, 400)]
-    predictions = model(x)           # Returns predictions
-    print()
-    print('Predictions')
-    print(predictions)
-    print()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Work on Animal')
@@ -136,6 +73,7 @@ if __name__ == '__main__':
         lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
 
         # 1 epoch takes 30 minutes on ratto
+        """
         for epoch in range(epochs):
             # train for one epoch, printing every 10 iterations
             train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=10)
@@ -143,7 +81,20 @@ if __name__ == '__main__':
             lr_scheduler.step()
             # evaluate on the test dataset
             evaluate(model, data_loader_test, device=device)
+            torch.save(model.state_dict(), modelpath)
+            print('Finished with masks')
+        """
+        for epoch in range(epochs):
+            for images, targets in data_loader:
+                images = list(image.to(device) for image in images)
+                targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
+                optimizer.zero_grad()
+                loss_dict = model(images, targets)
 
-        torch.save(model.state_dict(), modelpath)
-        print('Finished with masks')
+                losses = sum(loss for loss in loss_dict.values())
+                losses.backward()
+                optimizer.step()
+                print(f'Epoch: {epoch} loss: {losses.item()}')
+            torch.save(model.state_dict(), modelpath)
+
