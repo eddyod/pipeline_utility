@@ -1,4 +1,5 @@
 import argparse
+from datetime import datetime
 import os
 import sys
 from pathlib import Path
@@ -27,19 +28,24 @@ if __name__ == '__main__':
 
     animal = args.animal
     epochs = int(args.epochs)
-    if debug:
-        test_model(ROOT, animal)
-        sys.exit()
-
     dataset = MaskDataset(ROOT, animal, transforms = get_transform(train=True))
     dataset_test = MaskDataset(ROOT, animal, transforms = get_transform(train=False))
 
     # split the dataset in train and test set
     torch.manual_seed(1)
-    indices = torch.randperm(len(dataset)).tolist()
-    test_cases = int(len(indices) * 0.15)
-    dataset = torch.utils.data.Subset(dataset, indices[:-test_cases])
-    dataset_test = torch.utils.data.Subset(dataset_test, indices[-test_cases:])
+    if debug:
+        indices = torch.randperm(len(dataset)).tolist()
+        indices = indices[0:10]
+        test_cases = int(len(indices) * 0.15)
+        dataset = torch.utils.data.Subset(dataset, indices[:-test_cases])
+        dataset_test = torch.utils.data.Subset(dataset_test, indices[-test_cases:])
+    else:
+        indices = torch.randperm(len(dataset)).tolist()
+        test_cases = int(len(indices) * 0.15)
+        dataset = torch.utils.data.Subset(dataset, indices[:-test_cases])
+        dataset_test = torch.utils.data.Subset(dataset_test, indices[-test_cases:])
+
+
     # define training and validation data loaders
     # multiprocessing with something other than 0 workers doesn't work on current
     # version of python's multiprocessing. Using 0 turns it off
@@ -62,6 +68,11 @@ if __name__ == '__main__':
     num_classes = 2
     modelpath = os.path.join(ROOT, 'mask.model.pth')
     if runmodel:
+        # create logging file
+        logpath = os.path.join(ROOT, "mask.logger.txt")
+        logfile = open(logpath, "w")
+        logheader = f"Masking {datetime.now()} with {epochs} epochs\n"
+        logfile.write(logheader)
         # get the model using our helper function
         model = get_model_instance_segmentation(num_classes)
         # move model to the right device
@@ -75,10 +86,15 @@ if __name__ == '__main__':
         # 1 epoch takes 30 minutes on ratto
         for epoch in range(epochs):
             # train for one epoch, printing every 10 iterations
-            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=10)
+            mlogger = train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=100)
+            smlogger = str(mlogger) + "\n"
+            logfile.write(smlogger)
             # update the learning rate
             lr_scheduler.step()
             # evaluate on the test dataset
             evaluate(model, data_loader_test, device=device)
-            torch.save(model.state_dict(), modelpath)
-            print('Finished with masks')
+            if not debug:
+                torch.save(model.state_dict(), modelpath)
+        print('Finished with masks')
+        logfile.close()
+
